@@ -34,7 +34,7 @@ const getAllBlogs = async function (req, res) {
         const data = req.query
         if (Object.keys(data) == 0) return res.status(400).send({ status: false, msg: "No input provided" })
 
-        const blogs = await BlogModel.find(data, { isDeleted: false }, { isPublished: true }).populate("authorId")
+        const blogs = await BlogModel.find({$and : [data, { isDeleted: false }, { isPublished: true }]}).populate("authorId")
         if (blogs.length == 0) return res.status(404).send({ status: false, msg: "No blogs Available." })
         res.status(200).send({ status: true,count:blogs.length, data: blogs });
     }
@@ -113,7 +113,7 @@ const Qdeleted = async function (req, res) {
     try {
         const data = req.query
         if (Object.keys(data) == 0) return res.status(400).send({ status: false, msg: "No input provided" })
-        const deleteBYquery = await BlogModel.updateMany(data, { isDeleted: true, deletedAt: new Date() }, { new: true })
+        const deleteBYquery = await BlogModel.updateMany({ $and : [data , {isPublished : false} ]}, { isDeleted: true, deletedAt: new Date() }, { new: true })
         if (!deleteBYquery) return res.status(404).send({ status: false, msg: "no such blog found" })
         res.status(200).send({ status: true, msg: deleteBYquery })
     }
